@@ -6,9 +6,10 @@
         {
             "label": "Executar o projeto com novas alterações",
             "type": "shell",
-            "command": "rm Gemfile.lock",
-            "command": "bundle install",
-            "command": "bundle exec puma config.ru --bind=tcp://0.0.0.0:9292"
+            "command": "bundle exec puma config.ru --bind=tcp://0.0.0.0:9292",
+            "problemMatcher": [
+                "$lessc"
+            ]
         }
     ]
 }

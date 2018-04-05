@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/cristophervidalmachado/brcobranca.git
-  revision: 631a590b0e7351a1ef7d48723d16c7d61fdc30b9
+  revision: 9f31076b5158cfea7f08853aae757f83c59719c1
   specs:
     brcobranca (9.1.2)
       parseline (~> 1.0.3)

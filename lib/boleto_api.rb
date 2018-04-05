@@ -47,26 +47,7 @@ module BoletoApi
         end
       end
 
-      desc 'Generates boleto nosso_numero'
-      # TODO do we also need an API endpoint for nosso_numero_dv?
-      # example with Itau boleto with data from https://github.com/kivanio/brcobranca/blob/master/spec/brcobranca/boleto/itau_spec.rb:
-      # http://localhost:9292/api/boleto/nosso_numero?bank=itau&data=%7B%22valor%22:0.0,%22cedente%22:%22Kivanio%20Barbosa%22,%22documento_cedente%22:%2212345678912%22,%22sacado%22:%22Claudio%20Pozzebom%22,%22sacado_documento%22:%2212345678900%22,%22agencia%22:%220810%22,%22conta_corrente%22:%2253678%22,%22convenio%22:12387,%22documento_numero%22:%2212345678%22%7D
-      # boleto fields are listed here: https://github.com/kivanio/brcobranca/blob/master/lib/brcobranca/boleto/base.rb
-      params do
-        requires :bank, type: String, desc: 'Bank'
-        requires :data, type: String, desc: 'Boleto data as a stringified json'
-      end
-      get :nosso_numero do
-        values = JSON.parse(params[:data])
-        boleto = BoletoApi.get_boleto(params[:bank], values)
-        if boleto.valid?
-          boleto.nosso_numero_boleto
-        else
-          error!(boleto.errors.messages, 400)
-        end
-      end
-
-      desc 'Return a bolato image or pdf'
+      desc 'Return a boleto image or pdf'
       # example of valid Itau boleto with data from https://github.com/kivanio/brcobranca/blob/master/spec/brcobranca/boleto/itau_spec.rb
       # http://localhost:9292/api/boleto?type=pdf&bank=itau&data=%7B%22valor%22:0.0,%22cedente%22:%22Kivanio%20Barbosa%22,%22documento_cedente%22:%2212345678912%22,%22sacado%22:%22Claudio%20Pozzebom%22,%22sacado_documento%22:%2212345678900%22,%22agencia%22:%220810%22,%22conta_corrente%22:%2253678%22,%22convenio%22:12387,%22documento_numero%22:%2212345678%22%7D
       # boleto fields are listed here: https://github.com/kivanio/brcobranca/blob/master/lib/brcobranca/boleto/base.rb

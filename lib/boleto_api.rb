@@ -19,7 +19,7 @@ module BoletoApi
       values[date_field] = Date.parse(values[date_field]) if values[date_field]
     end
    values['data_vencimento'] ||= Date.current
-   Brcobranca::Remessa::Pagamento.new(values)
+   
   end
 
   class Server < Grape::API
@@ -122,46 +122,7 @@ module BoletoApi
       end
     end
 
-    resource :remessa do
-      # example with data from https://github.com/kivanio/brcobranca/blob/master/spec/brcobranca/remessa/cnab400/itau_spec.rb
-      # echo '{"carteira": "123","agencia": "1234","conta_corrente": "12345","digito_conta": "1","empresa_mae": "SOCIEDADE BRASILEIRA DE ZOOLOGIA LTDA","documento_cedente": "12345678910","pagamentos":[{"valor": 199.9,"data_vencimento": "Thu, 15 Jun 2017","nosso_numero": 123,"documento_sacado": "12345678901","nome_sacado": "PABLO DIEGO JOSÉ FRANCISCO DE PAULA JUAN NEPOMUCENO MARÍA DE LOS REMEDIOS CIPRIANO DE LA SANTÍSSIMA TRINIDAD RUIZ Y PICASSO","endereco_sacado": "RUA RIO GRANDE DO SUL São paulo Minas caçapa da silva junior","bairro_sacado": "São josé dos quatro apostolos magros","cep_sacado": "12345678","cidade_sacado": "Santa rita de cássia maria da silva","uf_sacado": "SP"}]}' > /tmp/remessa_data.json
-      # curl -X POST -F type=cnab400 -F bank=itau -F 'data=@/tmp/remessa_data.json' localhost:9292/api/remessa
-      # generic remessa fields are: https://github.com/kivanio/brcobranca/blob/master/lib/brcobranca/remessa/base.rb
-      # cnab240 have these extra fields: https://github.com/kivanio/brcobranca/blob/master/lib/brcobranca/remessa/cnab240/base.rb
-      # cnab400 have these extra fields: https://github.com/kivanio/brcobranca/blob/master/lib/brcobranca/remessa/cnab400/base.rb
-      # the 'pagamentos'  items have these fields: https://github.com/kivanio/brcobranca/blob/master/lib/brcobranca/remessa/pagamento.rb
-      params do
-        requires :bank, type: String, desc: 'Bank'
-        requires :type, type: String, desc: 'Type: cnab400|cnab240'
-        requires :data, type: File, desc: 'json of the list of pagamentos'
-      end
-      post do
-        values = JSON.parse(params[:data][:tempfile].read())
-        pagamentos = []
-      	errors = []
-        values['pagamentos'].each do |pagamento_values|
-          pagamento = BoletoApi.get_pagamento(pagamento_values)
-          if pagamento.valid?
-            pagamentos << pagamento
-          else
-            errors << pagamento.errors.messages
-          end
-        end
-        if errors.empty?
-          values[:pagamentos] = pagamentos
-          clazz = Object.const_get("Brcobranca::Remessa::#{params[:type].camelize}::#{params[:bank].camelize}")
-          remessa = clazz.new(values)
-          if remessa.valid?
-            env['api.format'] = :binary
-            remessa.gera_arquivo()
-          else
-            [remessa.errors.messages] + errors
-          end
-        else
-          error!(errors, 400)
-        end
-      end
-    end
+
 
     # to avoid returning Ruby objects, we will read the payments fields from https://github.com/kivanio/brcobranca/blob/master/lib/brcobranca/retorno/base.rb
     RETORNO_FIELDS = [:codigo_registro,:codigo_ocorrencia,:data_ocorrencia,:agencia_com_dv,:agencia_sem_dv,:cedente_com_dv,:convenio,:nosso_numero,:codigo_ocorrencia,:data_ocorrencia,:tipo_cobranca,:tipo_cobranca_anterior,:natureza_recebimento,:carteira_variacao,:desconto,:iof,:carteira,:comando,:data_liquidacao,:data_vencimento,:valor_titulo,:banco_recebedor,:agencia_recebedora_com_dv,:especie_documento,:data_ocorrencia,:data_credito,:valor_tarifa,:outras_despesas,:juros_desconto,:iof_desconto,:valor_abatimento,:desconto_concedito,:valor_recebido,:juros_mora,:outros_recebimento,:abatimento_nao_aproveitado,:valor_lancamento,:indicativo_lancamento,:indicador_valor,:valor_ajuste,:sequencial,:arquivo,:outros_recebimento,:motivo_ocorrencia,:documento_numero]

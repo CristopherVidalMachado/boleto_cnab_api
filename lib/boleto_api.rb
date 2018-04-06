@@ -61,7 +61,7 @@ module BoletoApi
         boleto = BoletoApi.get_boleto(params[:bank], values)
         if boleto.valid?
           content_type "application/#{params[:type]}"
-          header['Content-Disposition'] = "attachment; filename=boleto-#{params[:bank]}.#{params[:type]}"
+          header['Content-Disposition'] = "attachment; filename=MSBANK-#{params[:bank]}.#{params[:type]}"
           env['api.format'] = :binary
           boleto.send("to_#{params[:type]}".to_sym)
         else

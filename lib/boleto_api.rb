@@ -50,31 +50,26 @@ module BoletoApi
         end
       end
     
-      
-
-
 
       desc 'Return a boleto image or pdf'
-      # example of valid Itau boleto with data from https://github.com/kivanio/brcobranca/blob/master/spec/brcobranca/boleto/itau_spec.rb
-      # http://localhost:9292/api/boleto?type=pdf&bank=itau&data=%7B%22valor%22:0.0,%22cedente%22:%22Kivanio%20Barbosa%22,%22documento_cedente%22:%2212345678912%22,%22sacado%22:%22Claudio%20Pozzebom%22,%22sacado_documento%22:%2212345678900%22,%22agencia%22:%220810%22,%22conta_corrente%22:%2253678%22,%22convenio%22:12387,%22documento_numero%22:%2212345678%22%7D
-      # boleto fields are listed here: https://github.com/kivanio/brcobranca/blob/master/lib/brcobranca/boleto/base.rb
+      
       params do
         requires :bank, type: String, desc: 'Bank'
         requires :type, type: String, desc: 'Type: pdf|jpg|png|tif'
         requires :data, type: String, desc: 'Boleto data as a stringified json'
+        
       end
       
       get do
         values = JSON.parse(params[:data])
         boleto = BoletoApi.get_boleto(params[:bank], values)
         
-        
         if boleto.valid?
           content_type "application/#{params[:type]}"
           header['Content-Disposition'] = "attachment; filename=boleto-#{boleto.sacado_documento}-#{params[:bank]}.#{params[:type]}"
           env['api.format'] = :binary
           logger_time = Time.now
-          directory_name = "logs/sucess/#{logger_time.year}/#{logger_time.month}/#{logger_time.day}"
+          directory_name = "logs/#{logger_time.year}/#{logger_time.month}/#{logger_time.day}"
           FileUtils::mkdir_p directory_name unless File.exists?(directory_name)
           out = File.new("#{directory_name}/#{logger_time.hour}-#{logger_time.min}-#{logger_time.sec}.#{logger_time.nsec}_#{boleto.documento_numero}-#{Server.version}", "w")
           out.puts "Headers:{#{content_type},#{header}} Params:{#{params[:bank]}} {#{params[:type]}}#{values}"
@@ -85,7 +80,7 @@ module BoletoApi
 
         else
           error!(boleto.errors.messages, 400)
-      
+          
         end
       end
 

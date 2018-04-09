@@ -74,10 +74,7 @@ module BoletoApi
           header['Content-Disposition'] = "attachment; filename=boleto-#{boleto.sacado_documento}-#{params[:bank]}.#{params[:type]}"
           env['api.format'] = :binary
           logger_time = Time.now
-          puts boleto.nosso_numero
-          
-          directory_name = "#{logger_time.year}/#{logger_time.month}/#{logger_time.day}"
-          
+          directory_name = "logs/sucess/#{logger_time.year}/#{logger_time.month}/#{logger_time.day}"
           FileUtils::mkdir_p directory_name unless File.exists?(directory_name)
           out = File.new("#{directory_name}/#{logger_time.hour}-#{logger_time.min}-#{logger_time.sec}.#{logger_time.nsec}_#{boleto.documento_numero}-#{Server.version}", "w")
           out.puts "Headers:{#{content_type},#{header}} Params:{#{params[:bank]}} {#{params[:type]}}#{values}"
